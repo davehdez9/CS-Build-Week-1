@@ -4,12 +4,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from decouple import config
 from django.contrib.auth.models import User
+from adventure.models import Room
 from .models import *
 from rest_framework.decorators import api_view
 import json
 
 # instantiate pusher
 # pusher = Pusher(app_id=config('PUSHER_APP_ID'), key=config('PUSHER_KEY'), secret=config('PUSHER_SECRET'), cluster=config('PUSHER_CLUSTER'))
+
 
 @csrf_exempt
 @api_view(["GET"])
@@ -22,13 +24,21 @@ def initialize(request):
     nextRooms = [{'n': room.n_to}, {'e': room.e_to},
                  {'s': room.s_to}, {'w': room.w_to}]
     players = room.playerNames(player_id)
-    return JsonResponse({'uuid': uuid, 'name':player.user.username, 'title':room.title, 'description':room.description, 'nextRooms': nextRooms,'players':players}, safe=True)
+    return JsonResponse({'uuid': uuid, 'name': player.user.username, 'title': room.title, 'description': room.description, 'nextRooms': nextRooms, 'players': players}, safe=True)
 
 
-# @csrf_exempt
+@csrf_exempt
+@api_view(["GET"])
+def getRoomCoors(request):
+    allRooms = Room.objects.all()
+    coors = [[room.x_coor, room.y_coor] for room in allRooms]
+    return JsonResponse({'coors': coors}, safe=True)
+
+
+@csrf_exempt
 @api_view(["POST"])
 def move(request):
-    dirs={"n": "north", "s": "south", "e": "east", "w": "west"}
+    dirs = {"n": "north", "s": "south", "e": "east", "w": "west"}
     reverse_dirs = {"n": "south", "s": "north", "e": "west", "w": "east"}
     player = request.user.player
     player_id = player.id
@@ -36,7 +46,7 @@ def move(request):
     data = json.loads(request.body)
     direction = data['direction']
     room = player.room()
-    
+
     nextRoomID = None
 
     if direction == "n":
@@ -52,9 +62,10 @@ def move(request):
         nextRoom = Room.objects.get(id=nextRoomID)
 
         # Rooms we can move to after we move to the Next Room
-        nextNextRooms = [{'n': nextRoom.n_to}, {'e': nextRoom.e_to}, {'s' : nextRoom.s_to}, {'w': nextRoom.w_to}]
-        
-        player.currentRoom=nextRoomID
+        nextNextRooms = [{'n': nextRoom.n_to}, {'e': nextRoom.e_to}, {
+            's': nextRoom.s_to}, {'w': nextRoom.w_to}]
+
+        player.currentRoom = nextRoomID
         player.save()
         players = nextRoom.playerNames(player_id)
         currentPlayerUUIDs = room.playerUUIDs(player_id)
@@ -63,14 +74,14 @@ def move(request):
         #     pusher.trigger(f'p-channel-{p_uuid}', u'broadcast', {'message':f'{player.user.username} has walked {dirs[direction]}.'})
         # for p_uuid in nextPlayerUUIDs:
         #     pusher.trigger(f'p-channel-{p_uuid}', u'broadcast', {'message':f'{player.user.username} has entered from the {reverse_dirs[direction]}.'})
-        return JsonResponse({'name':player.user.username, 'title':nextRoom.title, 'description':nextRoom.description, 'players':players, 'nextRooms': nextNextRooms, 'error_msg':""}, safe=True)
+        return JsonResponse({'name': player.user.username, 'title': nextRoom.title, 'description': nextRoom.description, 'players': players, 'nextRooms': nextNextRooms, 'error_msg': ""}, safe=True)
     else:
         players = room.playerNames(player_id)
-        return JsonResponse({'name':player.user.username, 'title':room.title, 'description':room.description, 'players':players, 'error_msg':"You cannot move that way."}, safe=True)
+        return JsonResponse({'name': player.user.username, 'title': room.title, 'description': room.description, 'players': players, 'error_msg': "You cannot move that way."}, safe=True)
 
 
 @csrf_exempt
 @api_view(["POST"])
 def say(request):
     # IMPLEMENT
-    return JsonResponse({'error':"Not yet implemented"}, safe=True, status=500)
+    return JsonResponse({'error': "Not yet implemented"}, safe=True, status=500)
