@@ -19,8 +19,10 @@ def initialize(request):
     player_id = player.id
     uuid = player.uuid
     room = player.room()
+    nextRooms = [{'n': room.n_to}, {'e': room.e_to},
+                 {'s': room.s_to}, {'w': room.w_to}]
     players = room.playerNames(player_id)
-    return JsonResponse({'uuid': uuid, 'name':player.user.username, 'title':room.title, 'description':room.description, 'players':players}, safe=True)
+    return JsonResponse({'uuid': uuid, 'name':player.user.username, 'title':room.title, 'description':room.description, 'nextRooms': nextRooms,'players':players}, safe=True)
 
 
 # @csrf_exempt
@@ -34,7 +36,9 @@ def move(request):
     data = json.loads(request.body)
     direction = data['direction']
     room = player.room()
+    
     nextRoomID = None
+
     if direction == "n":
         nextRoomID = room.n_to
     elif direction == "s":
@@ -44,7 +48,12 @@ def move(request):
     elif direction == "w":
         nextRoomID = room.w_to
     if nextRoomID is not None and nextRoomID > 0:
+        # Room we are moving to
         nextRoom = Room.objects.get(id=nextRoomID)
+
+        # Rooms we can move to after we move to the Next Room
+        nextNextRooms = [{'n': nextRoom.n_to}, {'e': nextRoom.e_to}, {'s' : nextRoom.s_to}, {'w': nextRoom.w_to}]
+        
         player.currentRoom=nextRoomID
         player.save()
         players = nextRoom.playerNames(player_id)
@@ -54,7 +63,7 @@ def move(request):
         #     pusher.trigger(f'p-channel-{p_uuid}', u'broadcast', {'message':f'{player.user.username} has walked {dirs[direction]}.'})
         # for p_uuid in nextPlayerUUIDs:
         #     pusher.trigger(f'p-channel-{p_uuid}', u'broadcast', {'message':f'{player.user.username} has entered from the {reverse_dirs[direction]}.'})
-        return JsonResponse({'name':player.user.username, 'title':nextRoom.title, 'description':nextRoom.description, 'players':players, 'error_msg':""}, safe=True)
+        return JsonResponse({'name':player.user.username, 'title':nextRoom.title, 'description':nextRoom.description, 'players':players, 'nextRooms': nextNextRooms, 'error_msg':""}, safe=True)
     else:
         players = room.playerNames(player_id)
         return JsonResponse({'name':player.user.username, 'title':room.title, 'description':room.description, 'players':players, 'error_msg':"You cannot move that way."}, safe=True)
