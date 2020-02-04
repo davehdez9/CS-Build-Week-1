@@ -1,11 +1,12 @@
 import math
 from random import random
+from adventure.models import Room
 
-# Pretty copied line for line from 
+# Pretty much copied line for line from 
 # https://codepen.io/anon/pen/aLpORx
 
 class Grid:
-	def __init__(self, dimensions=2000, maxTunnels=20000, maxLength=10):
+	def __init__(self, dimensions=20, maxTunnels=100, maxLength=5):
 		self.dimensions = dimensions
 		self.maxTunnels = maxTunnels
 		self.maxLength = maxLength
@@ -58,10 +59,6 @@ class Grid:
 
 
 myGrid = Grid()
-print(myGrid.currentRow)
-print(myGrid.currentCol)
-for i in myGrid.grid:
-	print(i)
 myGrid.carveGrid()
 print(' ')
 for i in myGrid.grid:
@@ -70,7 +67,7 @@ for i in myGrid.grid:
 total = 0
 for i in range(0, len(myGrid.grid)):
 	for j in myGrid.grid[i]:
-		total += j
+		
 
 print('Total', total)	
 
