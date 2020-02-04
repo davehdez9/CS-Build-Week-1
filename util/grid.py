@@ -1,17 +1,18 @@
 import math
 from random import random
 from adventure.models import Room, Player
+from util.templates import titleGenerator, descGenerator
 
 
 class Grid:
-    def __init__(self, dimensions=20, maxTunnels=100, maxLength=5):
+    def __init__(self, dimensions=50, maxTunnels=500, maxLength=8):
         self.dimensions = dimensions
         self.maxTunnels = maxTunnels
         self.maxLength = maxLength
         self.grid = self.createGrid(dimensions)  # Create the grid
 
-        self.currentRow = math.floor(random() * dimensions)  # random start X
-        self.currentCol = math.floor(random() * dimensions)  # random start Y
+        self.currentRow = 25  # random start X
+        self.currentCol = 25  # random start Y
         # top, right, bottom, left as [y, x] coordinates
         self.directions = [[0, -1], [1, 0], [0, 1], [-1, 0]]
         self.lastDirection = [0, 0]  # save the last direction
@@ -107,7 +108,7 @@ class Grid:
                 if not self.grid[y][x] == 0:
                     # Create and Save the room HERE
                     self.grid[y][x] = Room(
-                        title=f"Room {y}, {x}", x_coor=x, y_coor=y)
+                        title=titleGenerator(), description=descGenerator(), x_coor=x, y_coor=y)
                     currentRoom = self.grid[y][x]
                     currentRoom.save()
 
