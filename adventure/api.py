@@ -104,7 +104,7 @@ def move(request):
         return JsonResponse({'name': player.user.username, 'title': room.title, 'roomId': room.id, 'description': room.description, 'x_coor': room.x_coor, 'y_coor': room.y_coor, 'players': players, 'error_msg': "You cannot move that way."}, safe=True)
 
 
-# @csrf_exempt
+@csrf_exempt
 @api_view(["POST"])
 def say(request):
     # IMPLEMENT
@@ -119,4 +119,4 @@ def say(request):
     pusher.trigger(f'room-{roomId}', 'broadcast',
                    {'user': user, 'message': data['message']})
 
-    return JsonResponse({'user': user, 'message': data['message']}, safe=True, status=500)
+    return JsonResponse({'user': user, 'message': data['message']}, safe=True, status=200)
