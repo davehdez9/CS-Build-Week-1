@@ -67,6 +67,7 @@ class Player(models.Model):
 
 @receiver(post_save, sender=User)
 def create_user_player(sender, instance, created, **kwargs):
+    print("Create User Player", instance)
     if created:
         Player.objects.create(user=instance)
         Token.objects.create(user=instance)
@@ -74,4 +75,6 @@ def create_user_player(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_player(sender, instance, **kwargs):
+    print("Save User Player", instance)
+    print('Instance stuff', dir(instance))
     instance.player.save()
