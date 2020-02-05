@@ -36,6 +36,24 @@ def getRoomCoors(request):
 
 
 @csrf_exempt
+@api_view(["GET"])
+def getMatrix(request):
+    allRooms = Room.objects.all()
+    coors = [[room.x_coor, room.y_coor] for room in allRooms]
+
+    matrix = []
+    for i in range(0, 50):
+        matrix.append([])
+        for j in range(0, 50):
+            matrix[i].append(0)
+
+    for x, y in coors:
+        matrix[y][x] = 1
+
+    return JsonResponse({'matrix': matrix}, safe=True)
+
+
+@csrf_exempt
 @api_view(["POST"])
 def move(request):
     dirs = {"n": "north", "s": "south", "e": "east", "w": "west"}
