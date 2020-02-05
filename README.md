@@ -1,5 +1,7 @@
 # Space Beez API Documentation
 
+Postman Documentation [here](https://documenter.getpostman.com/view/7670132/SWTG6FoU).
+
 BaseURL: `https://mudierthegame.herokuapp.com/api/`
 
 <details>
@@ -143,7 +145,7 @@ Requires a response object with the direction:
 }
 ```
 
-When successful will return status code of 200 (OK), and an array of arrays containing 1s and 0s that signify which are rooms and which are not.
+When successful will return status code of 200 (OK), and an array of arrays containing 1s ## and 0s that signify which are rooms and which are not.
 
 </details>
 
