@@ -2,6 +2,8 @@ from django.conf.urls import url
 from . import api
 
 urlpatterns = [
+    url('leaderboard', api.leaderboard),
+    url('battle', api.battleResults),
     url('matrix', api.getMatrix),
     url('coors', api.getRoomCoors),
     url('init', api.initialize),

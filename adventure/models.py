@@ -6,6 +6,16 @@ from rest_framework.authtoken.models import Token
 import uuid
 
 
+class Monster(models.Model):
+    name = models.CharField(max_length=50, default="Venus Fly Trap")
+    description = models.CharField(
+        max_length=500, default="An angry little bugger")
+    honeyGained = models.IntegerField(default=2)
+    honeyLost = models.IntegerField(default=1)
+    xp = models.IntegerField(default=1)
+    xpGained = models.IntegerField(default=1)
+
+
 class Room(models.Model):
     title = models.CharField(max_length=50, default="DEFAULT TITLE")
     description = models.CharField(
@@ -16,6 +26,7 @@ class Room(models.Model):
     w_to = models.IntegerField(default=0)
     x_coor = models.IntegerField(default=0)
     y_coor = models.IntegerField(default=0)
+    monster = models.ForeignKey(Monster, default=1, on_delete=models.CASCADE)
 
     def connectRooms(self, destinationRoom, direction):
         destinationRoomID = destinationRoom.id
@@ -51,6 +62,8 @@ class Player(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     currentRoom = models.IntegerField(default=0)
     uuid = models.UUIDField(default=uuid.uuid4, unique=True)
+    honey = models.IntegerField(default=100)
+    xp = models.IntegerField(default=5)
 
     def initialize(self):
         if self.currentRoom == 0:
