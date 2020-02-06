@@ -8,7 +8,6 @@ from adventure.models import Room, Monster, Player
 from .models import *
 from rest_framework.decorators import api_view
 import json
-import operator
 
 # instantiate pusher
 pusher = Pusher(app_id=config('PUSHER_APP_ID'), key=config(
