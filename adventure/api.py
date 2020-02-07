@@ -170,9 +170,13 @@ def battleResults(request):
     honeyGained = data['honeyGained']
     xpGained = data['xpGained']
 
-    player.honey += honeyGained
-    player.xp += xpGained
-    player.save()
+    if honeyGained < 0:
+        player.honey += honeyGained
+        player.save()
+    else:
+        player.honey += honeyGained
+        player.xp += xpGained
+        player.save()
 
     return JsonResponse({'xp': player.xp, 'honey': player.honey, 'message': f"{user} now has {player.honey} honey and {player.xp} XP"})
 
