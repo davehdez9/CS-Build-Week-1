@@ -34,7 +34,7 @@ def initialize(request):
         'description': monster.description,
         'honeyGained': monster.honeyGained,
         'honeyLost': monster.honeyLost,
-        'xpGained': monster.honeyGained,
+        'xpGained': monster.xpGained,
         'xp': monster.xp
     }
 
@@ -84,7 +84,7 @@ def move(request):
         'description': monster.description,
         'honeyGained': monster.honeyGained,
         'honeyLost': monster.honeyLost,
-        'xpGained': monster.honeyGained,
+        'xpGained': monster.xpGained,
         'xp': monster.xp
     }
 
@@ -107,7 +107,7 @@ def move(request):
             'description': monster.description,
             'honeyGained': monster.honeyGained,
             'honeyLost': monster.honeyLost,
-            'xpGained': monster.honeyGained,
+            'xpGained': monster.xpGained,
             'xp': monster.xp
         }
 
@@ -223,7 +223,7 @@ def teleport(request):
             'description': monster.description,
             'honeyGained': monster.honeyGained,
             'honeyLost': monster.honeyLost,
-            'xpGained': monster.honeyGained,
+            'xpGained': monster.xpGained,
             'xp': monster.xp
         }
 
