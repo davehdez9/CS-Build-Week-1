@@ -8,6 +8,9 @@ from adventure.models import Room, Monster, Player
 from .models import *
 from rest_framework.decorators import api_view
 import json
+import math
+from random import random
+from threading import Timer
 
 # instantiate pusher
 pusher = Pusher(app_id=config('PUSHER_APP_ID'), key=config(
@@ -126,10 +129,10 @@ def move(request):
         #     pusher.trigger(f'p-channel-{p_uuid}', u'broadcast', {
         #                    'message': f'{player.user.username} has entered from the {reverse_dirs[direction]}.'})
 
-        return JsonResponse({'name': player.user.username, 'title': nextRoom.title, 'description': nextRoom.description, 'roomId': nextRoom.id, 'monster': nextRoomMonster, 'x_coor': nextRoom.x_coor, 'y_coor': nextRoom.y_coor, 'players': players, 'nextRooms': nextNextRooms, 'error_msg': ""}, safe=True)
+        return JsonResponse({'name': player.user.username, 'xp': player.xp, 'honey': player.honey, 'title': nextRoom.title, 'description': nextRoom.description, 'roomId': nextRoom.id, 'monster': nextRoomMonster, 'x_coor': nextRoom.x_coor, 'y_coor': nextRoom.y_coor, 'players': players, 'nextRooms': nextNextRooms, 'error_msg': ""}, safe=True)
     else:
         players = room.playerNames(player_id)
-        return JsonResponse({'name': player.user.username, 'title': room.title, 'roomId': room.id, 'description': room.description, 'monster': roomMonster, 'x_coor': room.x_coor, 'y_coor': room.y_coor, 'players': players, 'error_msg': "You cannot move that way."}, safe=True)
+        return JsonResponse({'name': player.user.username, 'xp': player.xp, 'honey': player.honey, 'title': room.title, 'roomId': room.id, 'description': room.description, 'monster': roomMonster, 'x_coor': room.x_coor, 'y_coor': room.y_coor, 'players': players, 'error_msg': "You cannot move that way."}, safe=True)
 
 
 @csrf_exempt
@@ -182,3 +185,81 @@ def leaderboard(request):
                for player in allPlayers][:10]
 
     return JsonResponse({'topPlayers': players})
+
+
+@csrf_exempt
+@api_view(["POST"])
+def teleport(request):
+    player = request.user.player
+
+    if player.honey < 50:
+        return JsonResponse({
+            'error_msg': "You don't have enough honey to complete this action"
+        }, status=401)
+    else:
+        # Get a room randomly between the first and last rooms
+        firstRoomId = Room.objects.all().first().id
+        lastRoomId = Room.objects.all().last().id
+        randomNumber = math.floor(
+            random() * (lastRoomId - firstRoomId) + firstRoomId)
+
+        nextRoom = Room.objects.get(id=randomNumber)
+
+        # The next Room's next Rooms
+        nextNextRooms = [{'n': nextRoom.n_to}, {'e': nextRoom.e_to}, {
+            's': nextRoom.s_to}, {'w': nextRoom.w_to}]
+
+        # Players in the next Room
+        players = nextRoom.playerNames(player.id)
+
+        # Get the monster in that room
+        monster = Monster.objects.get(id=nextRoom.monster.id)
+        nextRoomMonster = {
+            'name': monster.name,
+            'description': monster.description,
+            'honeyGained': monster.honeyGained,
+            'honeyLost': monster.honeyLost,
+            'xpGained': monster.honeyGained,
+            'xp': monster.xp
+        }
+
+        # Save the player into the new room
+        player.honey -= 50
+        player.currentRoom = randomNumber
+        player.save()
+
+    return JsonResponse({'name': player.user.username, 'xp': player.xp, 'honey': player.honey, 'title': nextRoom.title, 'description': nextRoom.description, 'roomId': nextRoom.id, 'monster': nextRoomMonster, 'x_coor': nextRoom.x_coor, 'y_coor': nextRoom.y_coor, 'players': players, 'nextRooms': nextNextRooms, 'error_msg': ""}, safe=True)
+
+
+@csrf_exempt
+@api_view(["POST"])
+def boost(request):
+
+    player = request.user.player
+
+    # Request Data
+    data = json.loads(request.body)
+    cost = data['cost']
+    xp = data['xp']
+    temp = data['temp']
+
+    if player.honey < cost:
+        return JsonResponse({
+            'error_msg': "You don't have enough honey to complete this action"
+        }, status=401)
+
+    # Helper function to actually update the player
+    def boostPlayer(player, cost, xp):
+        player.honey += cost
+        player.xp += xp
+        player.save()
+
+    if not temp == 0:
+        # Give the player the boost
+        boostPlayer(player, -cost, xp)
+        boost = Timer(temp, boostPlayer, (player, 0, -xp))
+        boost.start()
+    else:
+        boostPlayer(player, -cost, xp)
+
+    return JsonResponse({"honey": player.honey, 'xp': player.xp, "message": f"{request.user.username} spent {cost} honey to get a boost of {xp}xp."})
